@@ -1,5 +1,6 @@
 import mongoose,{Schema,Document} from "mongoose";
 
+//interface for builder
 interface IGig {
     gigTitle:string,
     gigDescription:string
