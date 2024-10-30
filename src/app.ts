@@ -10,6 +10,7 @@ import authRoutes from './routes/authRoutes';
 import serviceRoutes from './routes/serviceRoutes';
 import gigRoutes from './routes/gigRoutes';
 import userRoutes from './routes/userRoutes';
+import stateRoutes from './routes/stateRoutes'
 // import orderRoutes from './routes/'
 
 
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/service', serviceRoutes);
 app.use('/api/gig', gigRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api', stateRoutes);
 // app.use('/api/order', orderRoutes);
 
 // Apply basic authentication middleware for Swagger UI

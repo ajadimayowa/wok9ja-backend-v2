@@ -4,19 +4,19 @@ import bcrypt from 'bcryptjs'; // For password hashing comparison
 import jwt from 'jsonwebtoken'
 import { sendMail } from '../services/emailService';
 import { generateVerificationCode } from '../utils/generateVerificationCode';
-import { 
+import {
   sendWelcomeEmail,
   sendPasswordResetEmail,
   sendPasswordChangedEmail,
-  sendLoginNotificationEmail
- } from '../services/welcomeEmail';
+  sendLoginNotificationEmail,
+  sendUserVerifiedEmail
+} from '../services/welcomeEmail';
 
-export const registerUser = async (req: Request, res: Response) : Promise<any> => {
+export const registerUser = async (req: Request, res: Response): Promise<any> => {
+  const { fullName,email, phoneNumber, password } = req.body;
+  let fullNameSplit = fullName.split(" ");
+  let firstName = fullNameSplit[0];
   try {
-    const { fullName, phoneNumber, email, password } = req.body;
-
-    console.log({userInfo:req.body});
-
     // Validate input
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -39,19 +39,26 @@ export const registerUser = async (req: Request, res: Response) : Promise<any> =
 
 
     const user = new User({
-      fullName,
-      phoneNumber,
-      isVerified: false,
-      verificationCode,
-      email,
-      password: hashedPassword,
+      profile : {
+        fullName,
+        firstName,
+        isVerified: false,
+        verificationCode,
+        password: hashedPassword,
+      },
+      contact:{
+        phoneNumber,
+        email,
+      }
+      
+      
     });
 
     // Save the user to the database
     await user.save();
 
     // Send registration email
-    await sendWelcomeEmail(fullName, email, verificationCode);
+    await sendWelcomeEmail(firstName, email, verificationCode);
     return res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
     console.error(err); // Log the error for debugging
@@ -80,11 +87,11 @@ export const requestPasswordReset = async (req: Request, res: Response): Promise
     const verificationCode = generateVerificationCode();
 
     // Save the verification code to the user record
-    user.verificationCode = verificationCode;
+    user.profile.verificationCode = verificationCode;
     await user.save();
 
     // Send the verification code via email
-    await sendPasswordResetEmail(user.fullName, email, verificationCode);
+    await sendPasswordResetEmail(user.profile.fullName, email, verificationCode);
 
     return res.status(200).json({ message: 'OTP sent successfully to reset password' });
   } catch (err) {
@@ -104,14 +111,14 @@ export const resetPassword = async (req: Request, res: Response): Promise<any> =
     }
 
     // Find the user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ "contact.email":email });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     // Check if the verification code matches
-    if (user.verificationCode !== verificationCode) {
+    if (user.profile.verificationCode !== verificationCode) {
       return res.status(400).json({ error: 'Invalid verification code' });
     }
 
@@ -119,10 +126,10 @@ export const resetPassword = async (req: Request, res: Response): Promise<any> =
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Update user's password and clear the verification code
-    user.password = hashedPassword;
-    user.verificationCode = ''; // Optionally clear the verification code
+    user.profile.password = hashedPassword;
+    user.profile.verificationCode = ''; // Optionally clear the verification code
     await user.save();
-    await sendPasswordChangedEmail(user.fullName, email, verificationCode);
+    await sendPasswordChangedEmail(user.profile.fullName, email, verificationCode);
     return res.status(200).json({ message: 'Password reset successfully' });
   } catch (err) {
     console.error(err); // Log the error for debugging
@@ -141,27 +148,27 @@ export const verifyUser = async (req: Request, res: Response): Promise<any> => {
     }
 
     // Find the user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ "contact.email": email });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     // Check if the user is already verified
-    if (user.isVerified) {
+    if (user.profile.isVerified) {
       return res.status(400).json({ error: 'User is already verified' });
     }
 
     // Check if the verification code matches
-    if (user.verificationCode !== verificationCode) {
+    if (user.profile.verificationCode !== verificationCode) {
       return res.status(400).json({ error: 'Invalid verification code' });
     }
 
     // Update user verification status
-    user.isVerified = true;
-    user.verificationCode = ''; // Optionally clear the verification code
+    user.profile.isVerified = true;
+    user.profile.verificationCode = null; // Optionally clear the verification code
     await user.save();
-
+    await sendUserVerifiedEmail(user?.profile.firstName, email, verificationCode);
     return res.status(200).json({ message: 'User verified successfully' });
   } catch (err) {
     console.error(err); // Log the error for debugging
@@ -180,7 +187,7 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     }
 
     // Find the user by email
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ "contact.email": email });
     if (!existingUser) {
       console.log('User not found');
       return res.status(404).json({ error: 'User not found' });
@@ -193,7 +200,7 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     // }
 
     // Compare the password with the hashed password
-    const isMatch = await bcrypt.compare(password, existingUser.password);
+    const isMatch = await bcrypt.compare(password, existingUser.profile.password);
     console.log('Password Match:', isMatch); // Log the result of the comparison
 
     if (!isMatch) {
@@ -202,25 +209,32 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: existingUser._id, email: existingUser.email },
+      { userId: existingUser._id, email: existingUser.contact.email },
       process.env.JWT_SECRET as string, // JWT secret
       { expiresIn: '1h' }
     );
 
-    await sendLoginNotificationEmail(existingUser.fullName, email, '847474');
+    await sendLoginNotificationEmail(existingUser.profile.fullName, email, '847474');
     // Return the token and user info
     return res.status(200).json({
-      message: 'Login successful',
+      message: 'Login success',
       token,
-      userInfo: {
-        fullName: existingUser.fullName,
-        email: existingUser.email,
-        phoneNumber: existingUser.phoneNumber,
-        isVerified:existingUser.isVerified
+      payload: {
+        id:existingUser._id,
+        fullName: existingUser.profile.fullName,
+        firstName:existingUser.profile.firstName || '',
+        lastName:existingUser.profile.lastName || '',
+        email: existingUser.contact.email || '',
+        phoneNumber: existingUser.contact.phoneNumber,
+        isVerified: existingUser.profile.isVerified,
+        userId: existingUser._id,
+        state: existingUser.userLocation.state || '',
+        lga: existingUser.userLocation.lga || '',
+        homeAddress: existingUser.userLocation.homeAddress ||'',
       },
     });
 
-    
+
   } catch (err) {
     console.error('Login error:', err); // Log the error for debugging
     return res.status(500).json({ error: 'Internal Server Error' });
