@@ -1,24 +1,20 @@
 // mailer.ts
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com', // Brevo SMTP host
-  port: 465, // Use 587 for TLS
-  
-  auth: {
-    user: process.env.BREVO_USERNAME, // Your Brevo SMTP username (API key)
-    pass: process.env.BREVO_PASSWORD // Your Brevo API key (same as username)
-  },
-  secure: true, // Use TLS
-});
+
 
 export const sendMail = async (userEmail: string, subject: string, html: string) => {
-  // console.log({
-  //   from : process.env.BREVO_USERNAME,
-  //   sendignTo:to,
-  //   apiKey:process.env.BREVO_API_KEY,
-  //   userName : process.env.BREVO_USERNAME,
-  // })
+  const transporter = nodemailer.createTransport({
+    host: process.env.BREVO_SMTP_HOST, // Brevo SMTP host
+    port: parseInt(process.env.BREVO_HOST_PORT || '587'), // Use 587 for TLS
+    
+    auth: {
+      user: process.env.BREVO_USERNAME, // Your Brevo SMTP username (API key)
+      pass: process.env.BREVO_PASSWORD // Your Brevo API key (same as username)
+    },
+    secure: true, // Use TLS
+  });
+
 
   const mailerOptions = {
     from: '"Wok9ja" <hello@floatsolutionhub.com>', // sender address
