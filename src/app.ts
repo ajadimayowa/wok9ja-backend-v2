@@ -12,10 +12,9 @@ import gigRoutes from './routes/gigRoutes';
 import userRoutes from './routes/userRoutes';
 import stateRoutes from './routes/stateRoutes'
 // import orderRoutes from './routes/'
-
-
 dotenv.config();
 const app = express();
+
 
 // Security middleware
 app.use(helmet());
@@ -29,6 +28,8 @@ app.use(express.json());
 // Auth routes
 app.use('/api/auth', authRoutes);
 app.use('/api/service', serviceRoutes);
+
+
 app.use('/api/gig', gigRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api', stateRoutes);
