@@ -1,11 +1,15 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 interface IService extends Document {
-    title:string,
-    description :string,
-    icon :string,
+    id:string,
+    nameOfService: string,
+    briefDescription: string,
+    colorCode: string,
+    colorCode2: string,
+    serviceIcon: string,
+    iconLibraryIsIonic: boolean,
+    webIcon :string,
     createdBy:string,
-    colorCode:string,
     providers :string[]
     category :string
     subCategories :string[]
@@ -13,15 +17,15 @@ interface IService extends Document {
     dateTime :Date
 }
 const serviceSchema = new Schema<IService>({
-    title : {
+    nameOfService : {
         type:String,
         required:true
     },
-    description : {
+    briefDescription : {
         type:String,
         required:true
     },
-    icon : {
+    webIcon : {
         type:String,
         required:true
     },
@@ -55,4 +59,4 @@ const serviceSchema = new Schema<IService>({
     }
 });
 
-export const Service = mongoose.model<IService>('service', serviceSchema);
+export const Service = mongoose.model<IService>('services', serviceSchema);

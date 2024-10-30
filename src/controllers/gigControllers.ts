@@ -4,47 +4,55 @@ import mongoose from 'mongoose';
 
 // Create a new gig
 export const createGig = async (req: Request, res: Response): Promise<any> => {
-    try {
-      const {
-        gigTitle,
-        gigDescription,
-        gigImages,
-        gigCategoryId,
+  try {
+    const {
+      gigTitle,
+      gigDescription,
+      gigImages,
+      gigCategoryId,
+      gigSubCategoryId,
+      creatorFullName,
+      creatorPhoneNumber,
+      creatorOfficeAddress,
+      creatorLocalGovermentArea,
+      creatorId,
+      sellerPrice,
+      basePrice,
+      promotionType,
+    } = req.body;
+
+    // Create a new gig object with sellerInfo
+    const newGig = new GigSchema({
+      gigTitle,
+      gigDescription,
+      gigImages,
+      gigCategoryId,
+      gigSubCategoryId,
+      sellerInfo: {
         creatorFullName,
         creatorPhoneNumber,
         creatorOfficeAddress,
-        sellerPrice,
-        basePrice,
-        creatorId,
-        creatorLocalGovermentArea
-      } = req.body;
-  
-      // Validate required fields
-      if (!gigTitle || !gigDescription || !gigCategoryId || !creatorId) {
-        return res.status(400).json({ error: 'Required fields are missing' });
-      }
-  
-      const gig = new GigSchema({
-        gigTitle,
-        gigDescription,
-        gigImages,
-        gigCategoryId,
-        creatorFullName,
-        creatorPhoneNumber,
-        creatorOfficeAddress,
-        sellerPrice,
-        basePrice,
-        creatorId,
         creatorLocalGovermentArea,
-      });
-  
-      const savedGig = await gig.save();
-      return res.status(201).json({ message: 'Gig created successfully', gig: savedGig });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Internal Server Error' });
-    }
-  };
+        creatorId,
+      },
+      sellerPrice,
+      basePrice,
+      promotionType,
+    });
+
+    // Save the new gig to the database
+    const savedGig = await newGig.save();
+
+    // Return a success response
+    return res.status(201).json({
+      message: 'Gig created successfully',
+      gig: savedGig,
+    });
+  } catch (err) {
+    console.error('Error creating gig:', err);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
 
   // Get a gig by ID
 export const getGigById = async (req: Request, res: Response): Promise<any> => {

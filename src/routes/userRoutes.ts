@@ -1,12 +1,12 @@
 import express from 'express';
 import { loginUser, registerUser, requestPasswordReset, resetPassword, verifyUser } from '../controllers/authController';
-import { doUserKyc, updateUserProfile } from '../controllers/userController';
+import { doUserKyc, getUserById, updateUserProfile } from '../controllers/userController';
 
 const router = express.Router();
 
 
-
-router.post('/update-profile', updateUserProfile);
+router.get('/get-user', getUserById);
+router.patch('/update-profile', updateUserProfile);
 router.post('/kyc', doUserKyc);
 
 /**

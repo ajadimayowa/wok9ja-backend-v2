@@ -1,6 +1,55 @@
 import { Request, Response } from 'express';
 import { Service } from '../models/Service';
 
+
+export const createService = async (req: Request, res: Response): Promise<any> => {
+  try {
+    // Destructure the service properties from the request body
+    const {
+      nameOfService,
+      briefDescription,
+      colorCode,
+      colorCode2,
+      serviceIcon,
+      iconLibraryIsIonic,
+      webIcon,
+      createdBy,
+      providers,
+      category,
+      subCategories,
+      basic,
+    } = req.body;
+
+    // Create a new service object
+    const newService = new Service({
+      nameOfService,
+      briefDescription,
+      colorCode,
+      colorCode2,
+      serviceIcon,
+      iconLibraryIsIonic,
+      webIcon,
+      createdBy,
+      providers,
+      category,
+      subCategories,
+      basic
+    });
+
+    // Save the new service to the database
+    const savedService = await newService.save();
+
+    // Return a success response
+    return res.status(201).json({
+      message: 'Service created successfully',
+      service: savedService,
+    });
+  } catch (err) {
+    console.error('Error creating service:', err);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 export const getAllServices = async (req: Request, res: Response): Promise<any> => {
     try {
       const { page = 1, limit = 10 } = req.query; // Default values if not provided
