@@ -10,6 +10,7 @@ export const getUserById = async (req: Request, res: Response): Promise<any> => 
 
   try {
     const { userId } = req.query
+    console.log({appSent:userId})
     let user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not founding' })
@@ -17,15 +18,15 @@ export const getUserById = async (req: Request, res: Response): Promise<any> => 
 
     return res.status(200).json({
       message: 'User found',
-      payload:{
-        profile:{
-          id:user._id,
-          fullName:user.profile.fullName,
-          firstName:user.profile.firstName,
-          isVerified:user.profile.isVerified,
-          profilePicUrl:user.profile.profilePicUrl
+      payload: {
+        profile: {
+          id: user._id,
+          fullName: user.profile.fullName,
+          firstName: user.profile.firstName,
+          isVerified: user.profile.isVerified,
+          profilePicUrl: user.profile.profilePicUrl
         },
-        contact : {
+        contact: {
           email: user.contact.email,
           phoneNumber: user.contact.phoneNumber,
         },
@@ -37,30 +38,31 @@ export const getUserById = async (req: Request, res: Response): Promise<any> => 
         },
         userLocation: {
           state: user.userLocation.state,
+          stateId:user?.userLocation?.stateId,
           lga: user.userLocation.lga,
           homeAddress: user.userLocation.homeAddress,
           officeAddress: user.userLocation.officeAddress,
-          currentLocation:user.userLocation.currentLocation
+          currentLocation: user.userLocation.currentLocation
         },
         nok: {
-          nextOfKinAddress:user.nok.nextOfKinAddress,
+          nextOfKinAddress: user.nok.nextOfKinAddress,
           nextOfKinPhoneNumber: user.nok.nextOfKinPhoneNumber,
-          nextOfKinEmail:user.nok.nextOfKinEmail,
+          nextOfKinEmail: user.nok.nextOfKinEmail,
         },
-        selling : {
-          isSeller : user.selling.isSeller,
+        selling: {
+          isSeller: user.selling.isSeller,
           gigs: user.selling.gigs,
           orders: user.selling.orders
         },
-        buying : {
-          orders:user.buying.orders 
+        buying: {
+          orders: user.buying.orders
         },
-        billing:{
-          currentBalance:user.billing.currentBalance,
-          totalSpent:user.billing.totalSpent,
-          totalEarning:user.billing.totalEarning,
-          spendingHistory:user.billing.spendingHistory,
-          earningHistory:user.billing.earningHistory
+        billing: {
+          currentBalance: user.billing.currentBalance,
+          totalSpent: user.billing.totalSpent,
+          totalEarning: user.billing.totalEarning,
+          spendingHistory: user.billing.spendingHistory,
+          earningHistory: user.billing.earningHistory
         }
 
 
@@ -68,6 +70,7 @@ export const getUserById = async (req: Request, res: Response): Promise<any> => 
     })
 
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 
@@ -76,19 +79,21 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<an
 
   try {
     const { userId } = req.query; // Assume userId is passed as a route param
-    // console.log({sent:userId})
+    console.log({sent:userId})
+    console.log({updating:req.body})
     const {
       fullName,
       phoneNumber,
-      email,
       homeAddress,
       state,
+      stateId,
+      lgaId,
       lga
 
     } = req.body;
 
     // Validate input
-    if (!fullName && !phoneNumber && !email) {
+    if (!fullName && !phoneNumber) {
       return res.status(400).json({ error: 'At least one field (fullName, phoneNumber, or email) is required for update' });
     }
 
@@ -100,10 +105,10 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<an
     }
 
     // Check if the new email, phone number, or full name already exists for another user
-    if (email || phoneNumber || fullName) {
+    if (phoneNumber || fullName) {
       const existingUser = await User.findOne({
         _id: { $ne: userId }, // Exclude the current user
-        $or: [{ email }, { phoneNumber }, { fullName }],
+        $or: [{ phoneNumber }, { fullName }],
       });
 
       if (existingUser) {
@@ -116,7 +121,9 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<an
     if (phoneNumber) user.contact.phoneNumber = phoneNumber;
     if (homeAddress) user.userLocation.homeAddress = homeAddress;
     if (lga) user.userLocation.lga = lga;
-    if (state) user.userLocation.state = state
+    if (state) user.userLocation.state = state;
+    if (lgaId) user.userLocation.lgaId = lgaId;
+    if (stateId) user.userLocation.stateId = stateId
     // if (email) user.email = email;
     await user.save();
 
@@ -129,7 +136,11 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<an
 
 export const doUserKyc = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { userId } = req.params; // Assume userId is passed as a route param
+    const { userId } = req.query; // Assume userId is passed as a route param
+    console.log({
+      userSend:JSON.stringify(req.body),
+      userId:userId
+    })
     const {
       idType,
       idNumber,
@@ -159,7 +170,7 @@ export const doUserKyc = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json({ message: 'KYC completed!' });
   } catch (err) {
     console.error(err); // Log the error for debugging
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: `Internal Server Error : ${err}` });
   }
 };
 

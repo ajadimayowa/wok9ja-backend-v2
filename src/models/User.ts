@@ -25,7 +25,9 @@ export interface IUser extends Document {
   };
   userLocation: {
     state: string;
+    stateId:string;
     lga: string;
+    lgaId:string;
     homeAddress?: string,
     officeAddress?: string,
     currentLocation? :string
@@ -73,13 +75,15 @@ const UserSchema: Schema = new Schema({
   },
   kyc: {
     isVerified: { type: Boolean },
-    idType: { type: String },
-    idNumber: { type: String },
-    idDocumentFile: { type: String },
+    idType: { type: String, required:true },
+    idNumber: { type: String, required:true },
+    idDocumentFile: { type: String, required:true },
   },
   userLocation: {
     state: { type: String },
+    stateId:{type:String},
     lga: { type: String },
+    lgaId:{type:String},
     homeAddress: { type: String },
     officeAddress: { type: String },
     currentLocation :{ type: String },

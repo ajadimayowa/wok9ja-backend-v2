@@ -67,7 +67,7 @@ export const getAllServices = async (req: Request, res: Response): Promise<any> 
       // Return paginated services and meta data
       return res.status(200).json({
         message: 'Services retrieved successfully',
-        services,
+        payload:services,
         currentPage: pageNumber,
         totalPages: Math.ceil(totalServices / limitNumber),
         totalServices,
@@ -89,7 +89,7 @@ export const getAllServices = async (req: Request, res: Response): Promise<any> 
   
       return res.status(200).json({
         message: 'Service retrieved successfully',
-        service,
+        payload:service,
       });
     } catch (err) {
       console.error('Error fetching service:', err);
@@ -110,7 +110,7 @@ export const getAllServices = async (req: Request, res: Response): Promise<any> 
   
       return res.status(200).json({
         message: 'Service updated successfully',
-        service: updatedService,
+        payload: updatedService,
       });
     } catch (err) {
       console.error('Error updating service:', err);

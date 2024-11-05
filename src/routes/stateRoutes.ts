@@ -8,6 +8,6 @@ const router = Router();
 router.get('/states', getStates);
 
 // Route to get local governments by state ID
-router.get('/state/:stateId', getLocalGovernments);
+router.get('/lga/:stateId', getLocalGovernments);
 
 export default router;
