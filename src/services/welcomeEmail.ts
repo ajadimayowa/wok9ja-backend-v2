@@ -5,7 +5,7 @@ import path from 'path';
 import fs from 'fs';
 
 export const sendWelcomeEmail = async (fullName: string,userEmail: string, verificationCode:string) => {
-  const templatePath = path.join(__dirname, 'emailTemps', 'verification.hbs');
+  const templatePath = path.join(__dirname, 'emailTemps', 'registration.hbs');
   const templateSource = fs.readFileSync(templatePath, 'utf-8');
   // Compile the Handlebars templates
   const template = handlebars.compile(templateSource);
@@ -37,7 +37,7 @@ export const sendProfileUpdateEmail = async (fullName: string,userEmail: string,
 };
 
 export const sendPasswordResetEmail = async (fullName: string,userEmail: string, verificationCode:string) => {
-  const templatePath = path.join(__dirname, 'emailTemps', 'verification.hbs');
+  const templatePath = path.join(__dirname, 'emailTemps', 'passwordResetRequest.hbs');
   const templateSource = fs.readFileSync(templatePath, 'utf-8');
   // Compile the Handlebars templates
   const template = handlebars.compile(templateSource);
@@ -46,14 +46,14 @@ export const sendPasswordResetEmail = async (fullName: string,userEmail: string,
 
   try {
     await sendMail(userEmail, subject, html);
-    console.log('Welcome email sent successfully!');
+    // console.log('Welcome email sent successfully!');
   } catch (error) {
     console.error('Error sending welcome email:', error);
   }
 };
 
 export const sendPasswordChangedEmail = async (fullName: string,userEmail: string, verificationCode:string) => {
-  const templatePath = path.join(__dirname, 'emailTemps', 'verification.hbs');
+  const templatePath = path.join(__dirname, 'emailTemps', 'passwordResetSuccess.hbs');
   const templateSource = fs.readFileSync(templatePath, 'utf-8');
   // Compile the Handlebars templates
   const template = handlebars.compile(templateSource);
@@ -70,7 +70,7 @@ export const sendPasswordChangedEmail = async (fullName: string,userEmail: strin
 
 
 export const sendLoginNotificationEmail = async (fullName: string,userEmail: string, verificationCode:string) => {
-  const templatePath = path.join(__dirname, 'emailTemps', 'verification.hbs');
+  const templatePath = path.join(__dirname, 'emailTemps', 'login.hbs');
   const templateSource = fs.readFileSync(templatePath, 'utf-8');
   // Compile the Handlebars templates
   const template = handlebars.compile(templateSource);

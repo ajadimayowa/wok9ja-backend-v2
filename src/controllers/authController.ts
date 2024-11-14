@@ -13,6 +13,7 @@ import {
 } from '../services/welcomeEmail';
 
 export const registerUser = async (req: Request, res: Response): Promise<any> => {
+  
   const { fullName,email, phoneNumber, password } = req.body;
   let fullNameSplit = fullName.split(" ");
   let firstName = fullNameSplit[0];
@@ -24,11 +25,11 @@ export const registerUser = async (req: Request, res: Response): Promise<any> =>
 
     // Check if the email, phone number, or full name already exists
     const existingUser = await User.findOne({
-      $or: [{ email }, { phoneNumber }, { fullName }],
+      $or: [ { 'contact.email': email }, { 'contact.phoneNumber':phoneNumber}],
     });
 
     if (existingUser) {
-      return res.status(409).json({ error: 'User with this email, phone number, or full name already exists' });
+      return res.status(409).json({ error: 'User with this email, phone number already exists' });
     }
 
     const verificationCode = generateVerificationCode();
@@ -77,7 +78,7 @@ export const requestPasswordReset = async (req: Request, res: Response): Promise
     }
 
     // Find the user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ 'contact.email':email });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -91,7 +92,7 @@ export const requestPasswordReset = async (req: Request, res: Response): Promise
     await user.save();
 
     // Send the verification code via email
-    await sendPasswordResetEmail(user.profile.fullName, email, verificationCode);
+    await sendPasswordResetEmail(user.profile.firstName, email, verificationCode);
 
     return res.status(200).json({ message: 'OTP sent successfully to reset password' });
   } catch (err) {
@@ -129,7 +130,7 @@ export const resetPassword = async (req: Request, res: Response): Promise<any> =
     user.profile.password = hashedPassword;
     user.profile.verificationCode = ''; // Optionally clear the verification code
     await user.save();
-    await sendPasswordChangedEmail(user.profile.fullName, email, verificationCode);
+    await sendPasswordChangedEmail(user.profile.firstName, email, verificationCode);
     return res.status(200).json({ message: 'Password reset successfully' });
   } catch (err) {
     console.error(err); // Log the error for debugging
@@ -169,7 +170,7 @@ export const verifyUser = async (req: Request, res: Response): Promise<any> => {
     user.profile.verificationCode = null; // Optionally clear the verification code
     await user.save();
     await sendUserVerifiedEmail(user?.profile.firstName, email, verificationCode);
-    return res.status(200).json({ message: 'User verified successfully' });
+    return res.status(200).json({ message: 'Email verification successful!' });
   } catch (err) {
     console.error(err); // Log the error for debugging
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -214,7 +215,7 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
       { expiresIn: '1h' }
     );
 
-    await sendLoginNotificationEmail(existingUser.profile.fullName, email, '847474');
+    await sendLoginNotificationEmail(existingUser.profile.firstName, email, '847474');
     // Return the token and user info
     return res.status(200).json({
       message: 'Login success',

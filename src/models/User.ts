@@ -58,7 +58,7 @@ export interface IUser extends Document {
 
 const UserSchema: Schema = new Schema({
   profile: {
-    fullName: {type:String, required:true, unique:true},
+    fullName: {type:String, required:true},
     firstName: {type:String, required:true},
     lastName : {type:String},
     password: {type:String, required:true},
