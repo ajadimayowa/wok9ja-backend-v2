@@ -6,6 +6,7 @@ import {
   deleteGig,
   getGigs
 } from '../controllers/gigControllers';
+import upload from '../middlewares/upload';
 
 const router = express.Router();     
 
@@ -74,7 +75,8 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.post('/create-gig', createGig);
+router.post('/create-gig',upload.array('gigImages',3), createGig);
+// router.post('/create-gig',createGig);
 
 
 /**
@@ -98,7 +100,7 @@ router.post('/create-gig', createGig);
  *       500:
  *         description: Internal server error
  */
-router.get('/:gigId', getGigById);
+router.get('/get-gig/:gigId', getGigById);  
 
 /**
  * @swagger
@@ -150,7 +152,7 @@ router.put('/:gigId', updateGig);
  *       500:
  *         description: Internal server error
  */
-router.delete('/:gigId', deleteGig);
+router.delete('/delete/:gigId', deleteGig);
 
 /**
  * @swagger

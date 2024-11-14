@@ -26,7 +26,6 @@ app.use(cors());
 // Body parsing middleware
 app.use(express.json());
 
-// Auth routes
 app.use('/api/auth', authRoutes);
 app.use('/api/service', serviceRoutes);
 app.use('/api/gig', gigRoutes);

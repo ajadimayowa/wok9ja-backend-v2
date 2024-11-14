@@ -62,6 +62,10 @@ const gigSchema = new Schema({
         type: String,
         required: true,
       },
+      creatorState: {
+        type: String,
+        required: true,
+      },
       creatorId: {
         type: String,
         required: true, // Reference to the User (Seller)

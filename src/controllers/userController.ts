@@ -10,7 +10,7 @@ export const getUserById = async (req: Request, res: Response): Promise<any> => 
 
   try {
     const { userId } = req.query
-    console.log({appSent:userId})
+    console.log({ appSent: userId })
     let user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not founding' })
@@ -38,7 +38,7 @@ export const getUserById = async (req: Request, res: Response): Promise<any> => 
         },
         userLocation: {
           state: user.userLocation.state,
-          stateId:user?.userLocation?.stateId,
+          stateId: user?.userLocation?.stateId,
           lga: user.userLocation.lga,
           homeAddress: user.userLocation.homeAddress,
           officeAddress: user.userLocation.officeAddress,
@@ -76,11 +76,11 @@ export const getUserById = async (req: Request, res: Response): Promise<any> => 
 
 }
 export const updateUserProfile = async (req: Request, res: Response): Promise<any> => {
-
+  const profilePic = (req.file as any)?.location
   try {
     const { userId } = req.query; // Assume userId is passed as a route param
-    console.log({sent:userId})
-    console.log({updating:req.body})
+    console.log({ sent: userId })
+    console.log({ updating: req.body,profilePicUrl:profilePic })
     const {
       fullName,
       phoneNumber,
@@ -89,19 +89,23 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<an
       stateId,
       lgaId,
       lga
-
     } = req.body;
+   
 
     // Validate input
     if (!fullName && !phoneNumber) {
       return res.status(400).json({ error: 'At least one field (fullName, phoneNumber, or email) is required for update' });
     }
 
+    // if (!profilePic) {
+    //   return res.status(400).json({success:false, error: 'Profile picture is required' });
+    // }
+
     // Find the user by their ID
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ error: 'User not founding' });
+      return res.status(404).json({success:false, error: 'User not founding' });
     }
 
     // Check if the new email, phone number, or full name already exists for another user
@@ -112,7 +116,7 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<an
       });
 
       if (existingUser) {
-        return res.status(409).json({ error: 'Another user with this email, phone number, or full name already exists' });
+        return res.status(409).json({success:false, error: 'Another user with this email, phone number, or full name already exists' });
       }
     }
 
@@ -123,11 +127,19 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<an
     if (lga) user.userLocation.lga = lga;
     if (state) user.userLocation.state = state;
     if (lgaId) user.userLocation.lgaId = lgaId;
-    if (stateId) user.userLocation.stateId = stateId
+    if (stateId) user.userLocation.stateId = stateId;
+    if(profilePic) user.profile.profilePicUrl = profilePic;
     // if (email) user.email = email;
     await user.save();
-
-    return res.status(200).json({ message: 'Profile updated successfully' });
+    return res.status(200).json({success:true, message: 'Profile updated successfully',payload:{
+      fullName,
+      phoneNumber,
+      homeAddress,
+      state,
+      stateId,
+      lgaId,
+      profilePicUrl:profilePic
+    } });
   } catch (err) {
     console.error(err); // Log the error for debugging
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -137,14 +149,14 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<an
 export const doUserKyc = async (req: Request, res: Response): Promise<any> => {
   try {
     const { userId } = req.query; // Assume userId is passed as a route param
-    console.log({
-      userSend:JSON.stringify(req.body),
-      userId:userId
-    })
+    const idDocumentFile = (req.file as any)?.location
+    // console.log({
+    //   userSend: JSON.stringify(req.body),
+    //   userId: userId
+    // })
     const {
       idType,
       idNumber,
-      idDocumentFile
     } = req.body;
 
     // Validate input
@@ -156,9 +168,12 @@ export const doUserKyc = async (req: Request, res: Response): Promise<any> => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({success:false, error: 'User not found'});
     }
 
+    if (user.kyc.isVerified) {
+      return res.status(400).json({success:false, message: 'User is already verified!' })
+    }
     // Update the user's information
     if (idType) user.kyc.idType = idType;
     if (idNumber) user.kyc.idNumber = idNumber;
@@ -166,8 +181,7 @@ export const doUserKyc = async (req: Request, res: Response): Promise<any> => {
     user.kyc.isVerified = true;
     await user.save();
 
-
-    return res.status(200).json({ message: 'KYC completed!' });
+    return res.status(200).json({success:true, message: 'KYC completed!'});
   } catch (err) {
     console.error(err); // Log the error for debugging
     return res.status(500).json({ error: `Internal Server Error : ${err}` });

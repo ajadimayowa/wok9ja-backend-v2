@@ -75,9 +75,9 @@ const UserSchema: Schema = new Schema({
   },
   kyc: {
     isVerified: { type: Boolean },
-    idType: { type: String, required:true },
-    idNumber: { type: String, required:true },
-    idDocumentFile: { type: String, required:true },
+    idType: { type: String},
+    idNumber: { type: String},
+    idDocumentFile: { type: String},
   },
   userLocation: {
     state: { type: String },

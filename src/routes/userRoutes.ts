@@ -1,13 +1,14 @@
 import express from 'express';
 import { loginUser, registerUser, requestPasswordReset, resetPassword, verifyUser } from '../controllers/authController';
 import { doUserKyc, getUserById, updateUserProfile } from '../controllers/userController';
+import upload from '../middlewares/upload';
 
 const router = express.Router();
 
-
 router.get('/get-user', getUserById);
-router.patch('/update-profile', updateUserProfile);
-router.post('/kyc', doUserKyc);
+router.patch('/update-profile',upload.single('profilePic'), updateUserProfile);
+router.post('/kyc',upload.single('idDocumentFile'), doUserKyc);
+
 
 /**
  * @swagger
