@@ -4,6 +4,7 @@ import mongoose,{Schema,Document} from "mongoose";
 export interface IGig {
     gigTitle: string,
     gigDescription: string,
+    gigType: string,
     gigImages: string[],  // Array of image URLs
     gigCategoryId: string,
     gigSubCategoryId: string,
@@ -26,6 +27,10 @@ export interface IGig {
 
 const gigSchema = new Schema({
     gigTitle: {
+      type: String,
+      required: true,
+    },
+    gigType: {
       type: String,
       required: true,
     },

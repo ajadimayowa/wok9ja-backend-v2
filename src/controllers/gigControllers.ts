@@ -8,7 +8,7 @@ export const createGig = async (req: Request, res: Response): Promise<any> => {
   const gigImages = (req.files as any)
   const { creatorId } = req.query;
 
-  console.log({ hereisId: creatorId })
+  // console.log({ hereisId: creatorId })
 
   const creator = await User.findById(creatorId);
 
@@ -20,6 +20,7 @@ export const createGig = async (req: Request, res: Response): Promise<any> => {
     const {
       gigTitle,
       gigDescription,
+      gigType,
       gigCategoryId,
       gigSubCategoryId,
       creatorFullName,
@@ -50,6 +51,7 @@ export const createGig = async (req: Request, res: Response): Promise<any> => {
     const newGig = new GigSchema({
       gigTitle,
       gigDescription,
+      gigType,
       gigImages: gigImages.map((gig: any) => gig?.location),
       gigCategoryId,
       gigSubCategoryId,
